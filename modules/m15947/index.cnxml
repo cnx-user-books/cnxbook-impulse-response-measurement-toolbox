@@ -1,0 +1,264 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:md="http://cnx.rice.edu/mdml" xmlns:bib="http://bibtexml.sf.net/">
+  <title>Impulse Response Measurement Using Golay Complementary Sequences</title>
+  <metadata>
+  <md:content-id>m15947</md:content-id><md:title>Impulse Response Measurement Using Golay Complementary Sequences</md:title>
+  <md:abstract>A technique using Golay complementary sequences is introduced for measuring impulse responses.  Compared to the swept-sine method, it is more robust to additive white noise.  Free, open-source software is provided in Matlab (or Octave) and Pure Data (PD) for carrying out impulse-response measurements using the sound hardware found on a typical personal computer.</md:abstract>
+  <md:uuid>2db2a6db-4aef-4349-8c3c-843216b8e65d</md:uuid>
+</metadata>
+<featured-links>
+  <!-- WARNING! The 'featured-links' section is read only. Do not edit below.
+       Changes to the links section in the source will not be saved. -->
+    <link-group type="supplemental">
+      <link url="http://ccrma.stanford.edu/realsimple/imp_meas/" strength="1">Original source for this module</link>
+    </link-group>
+  <!-- WARNING! The 'featured-links' section is read only. Do not edit above.
+       Changes to the links section in the source will not be saved. -->
+</featured-links>
+<content>
+    <para id="id2255608"/>
+    
+    <section id="uid1">
+      <title>Introduction</title>
+      <figure id="uid2" orient="horizontal">
+        <media id="id7039081" alt=""><image src="../../media/linsystem2-e389.png" mime-type="image/png" width="218"/><image for="pdf" src="../../media/linsystem2.eps" mime-type="application/postscript" print-width="2.2in"/></media>
+        <caption>Linear system to be measured</caption>
+      </figure>
+      <para id="id2255676"><link target-id="uid2"/> depicts a linear system characterized by an impulse
+response <m:math><m:mrow><m:mi>h</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>, driven by an input signal <m:math><m:mrow><m:mi>s</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>, and producing the
+output signal <m:math><m:mrow><m:mi>r</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>. The <emphasis>system identification</emphasis> problem is to
+estimate <m:math><m:mrow><m:mi>h</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> given known input/output signals <m:math><m:mrow><m:mi>s</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> and <m:math><m:mrow><m:mi>r</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>. A
+practical method for identifying finite impulse responses uses
+<emphasis>Golay complementary sequences</emphasis> to excite the linear system as described below.  <link url="http://en.wikipedia.org/wiki/Maximum_length_sequence">Maximum length sequences</link> may be alternatively used for this type of measurement, as they are also noise signals consisting of 1's and -1's, but perfectly inverse filtering the measurement is more computationally intensive.</para>
+    </section>
+    <section id="uid3">
+      <title>Golay Complementary Sequences</title>
+      <para id="id2255807">The length <m:math><m:mi>L</m:mi></m:math> bilevel sequences <m:math><m:mrow><m:mi>a</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> and <m:math><m:mrow><m:mi>b</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> are <emphasis>Golay complementary sequences</emphasis> if
+and only if the following condition holds, where <m:math><m:mo>¤</m:mo></m:math> denotes the
+autocorrelation operator <link target-id="bid0"/>:
+</para>
+      <equation id="uid4"><m:math mode="display">
+          <m:mrow>
+            <m:mi>a</m:mi>
+            <m:mo>(</m:mo>
+            <m:mi>n</m:mi>
+            <m:mo>)</m:mo>
+            <m:mo>¤</m:mo>
+            <m:mi>a</m:mi>
+            <m:mo>(</m:mo>
+            <m:mi>n</m:mi>
+            <m:mo>)</m:mo>
+            <m:mo>+</m:mo>
+            <m:mi>b</m:mi>
+            <m:mo>(</m:mo>
+            <m:mi>n</m:mi>
+            <m:mo>)</m:mo>
+            <m:mo>¤</m:mo>
+            <m:mi>b</m:mi>
+            <m:mo>(</m:mo>
+            <m:mi>n</m:mi>
+            <m:mo>)</m:mo>
+            <m:mo>=</m:mo>
+            <m:mn>2</m:mn>
+            <m:mi>L</m:mi>
+            <m:mi>δ</m:mi>
+            <m:mo>(</m:mo>
+            <m:mi>n</m:mi>
+            <m:mo>)</m:mo>
+          </m:mrow>
+        </m:math>
+      </equation>
+      <para id="id2255943">and <m:math><m:mrow><m:mi>δ</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> is the Kronecker delta function. Many references in the audio signal processing literature refer to such sequences as Golay codes; however, to avoid confusion with Golay error-correcting codes used in digital communication, we call the sequences <emphasis>Golay complementary sequences</emphasis>.  Recall that
+(<link target-id="uid4"/>) can also be written using <m:math><m:mo>*</m:mo></m:math>, the convolution
+operator:</para>
+      <equation id="id2255979">
+        <m:math mode="display">
+          <m:mrow>
+            <m:mi>a</m:mi>
+            <m:mo>(</m:mo>
+            <m:mo>-</m:mo>
+            <m:mi>n</m:mi>
+            <m:mo>)</m:mo>
+            <m:mo>*</m:mo>
+            <m:mi>a</m:mi>
+            <m:mo>(</m:mo>
+            <m:mi>n</m:mi>
+            <m:mo>)</m:mo>
+            <m:mo>+</m:mo>
+            <m:mi>b</m:mi>
+            <m:mo>(</m:mo>
+            <m:mo>-</m:mo>
+            <m:mi>n</m:mi>
+            <m:mo>)</m:mo>
+            <m:mo>*</m:mo>
+            <m:mi>b</m:mi>
+            <m:mo>(</m:mo>
+            <m:mi>n</m:mi>
+            <m:mo>)</m:mo>
+            <m:mo>=</m:mo>
+            <m:mn>2</m:mn>
+            <m:mi>L</m:mi>
+            <m:mi>δ</m:mi>
+            <m:mo>(</m:mo>
+            <m:mi>n</m:mi>
+            <m:mo>)</m:mo>
+          </m:mrow>
+        </m:math>
+      </equation>
+      <para id="id2256048">Given that <m:math><m:mrow><m:msub><m:mi>a</m:mi><m:mi>L</m:mi></m:msub><m:mrow><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:mrow></m:math> and <m:math><m:mrow><m:msub><m:mi>b</m:mi><m:mi>L</m:mi></m:msub><m:mrow><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:mrow></m:math> are Golay, it turns out that
+<m:math><m:mrow><m:msub><m:mi>a</m:mi><m:mrow><m:mn>2</m:mn><m:mi>L</m:mi></m:mrow></m:msub><m:mrow><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow><m:mo>=</m:mo><m:mrow><m:mo>[</m:mo><m:mtable><m:mtr><m:mtd><m:mrow><m:msub><m:mi>a</m:mi><m:mi>L</m:mi></m:msub><m:mrow><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:mrow></m:mtd><m:mtd><m:mrow><m:msub><m:mi>b</m:mi><m:mi>L</m:mi></m:msub><m:mrow><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:mrow></m:mtd></m:mtr></m:mtable><m:mo>]</m:mo></m:mrow></m:mrow></m:math> and
+<m:math><m:mrow><m:msub><m:mi>b</m:mi><m:mrow><m:mn>2</m:mn><m:mi>L</m:mi></m:mrow></m:msub><m:mrow><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow><m:mo>=</m:mo><m:mrow><m:mo>[</m:mo><m:mtable><m:mtr><m:mtd><m:mrow><m:msub><m:mi>a</m:mi><m:mi>L</m:mi></m:msub><m:mrow><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:mrow></m:mtd><m:mtd><m:mrow><m:mo>-</m:mo><m:msub><m:mi>b</m:mi><m:mi>L</m:mi></m:msub><m:mrow><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:mrow></m:mtd></m:mtr></m:mtable><m:mo>]</m:mo></m:mrow></m:mrow></m:math> are also Golay. This means
+that Golay complementary sequences can be constructed recursively given seed
+sequences such as <m:math><m:mrow><m:msub><m:mi>a</m:mi><m:mn>2</m:mn></m:msub><m:mrow><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow><m:mo>=</m:mo><m:mrow><m:mo>[</m:mo><m:mtable><m:mtr><m:mtd><m:mn>1</m:mn></m:mtd><m:mtd><m:mn>1</m:mn></m:mtd></m:mtr></m:mtable><m:mo>]</m:mo></m:mrow></m:mrow></m:math> and
+<m:math><m:mrow><m:msub><m:mi>b</m:mi><m:mn>2</m:mn></m:msub><m:mrow><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow><m:mo>=</m:mo><m:mrow><m:mo>[</m:mo><m:mtable><m:mtr><m:mtd><m:mn>1</m:mn></m:mtd><m:mtd><m:mrow><m:mo>-</m:mo><m:mn>1</m:mn></m:mrow></m:mtd></m:mtr></m:mtable><m:mo>]</m:mo></m:mrow></m:mrow></m:math>. See the
+<link url="http://www.mathworks.com/">MATLAB</link>/<link url="http://www.octave.org/">Octave</link> source code <link url="http://ccrma.stanford.edu/realsimple/imp_meas/generate_golay.m">generate_golay.m</link>
+for details. Notice also that the resulting bilevel sequences consist
+of only 1's and <m:math><m:mrow><m:mo>-</m:mo><m:mn>1</m:mn></m:mrow></m:math>'s. This means that the signal contains the
+maximum possible power level given that <m:math><m:mrow><m:mo>|</m:mo><m:mi>s</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo><m:mo>|</m:mo><m:mo>≤</m:mo><m:mn>1</m:mn><m:mo>∀</m:mo><m:mi>n</m:mi></m:mrow></m:math>.
+This property is helpful for minimizing measurement noise.</para>
+      <para id="id2254910">Let <m:math><m:mrow><m:msub><m:mi>r</m:mi><m:mi>a</m:mi></m:msub><m:mrow><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow><m:mo>=</m:mo><m:mi>a</m:mi><m:mrow><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow><m:mo>*</m:mo><m:mi>h</m:mi><m:mrow><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:mrow></m:math> be the response due to the input
+<m:math><m:mrow><m:mi>a</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>, and let <m:math><m:mrow><m:msub><m:mi>r</m:mi><m:mi>b</m:mi></m:msub><m:mrow><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow><m:mo>=</m:mo><m:mi>b</m:mi><m:mrow><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow><m:mo>*</m:mo><m:mi>h</m:mi><m:mrow><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:mrow></m:math> be the response due to the input
+<m:math><m:mrow><m:mi>b</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>. Due to (<link target-id="uid4"/>), the impulse response <m:math><m:mrow><m:mi>h</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> may be
+determined as follows:</para>
+      <equation id="id2256801"><m:math mode="display">
+          <m:mrow>
+            <m:mi>h</m:mi>
+            <m:mrow>
+              <m:mo>(</m:mo>
+              <m:mi>n</m:mi>
+              <m:mo>)</m:mo>
+            </m:mrow>
+            <m:mo>=</m:mo>
+            <m:mfrac>
+              <m:mn>1</m:mn>
+              <m:mrow>
+                <m:mn>2</m:mn>
+                <m:mi>L</m:mi>
+              </m:mrow>
+            </m:mfrac>
+            <m:mrow>
+              <m:mo>(</m:mo>
+              <m:mi>a</m:mi>
+              <m:mrow>
+                <m:mo>(</m:mo>
+                <m:mi>n</m:mi>
+                <m:mo>)</m:mo>
+              </m:mrow>
+              <m:mo>¤</m:mo>
+              <m:msub>
+                <m:mi>r</m:mi>
+                <m:mi>a</m:mi>
+              </m:msub>
+              <m:mrow>
+                <m:mo>(</m:mo>
+                <m:mi>n</m:mi>
+                <m:mo>)</m:mo>
+              </m:mrow>
+              <m:mo>+</m:mo>
+              <m:mi>b</m:mi>
+              <m:mrow>
+                <m:mo>(</m:mo>
+                <m:mi>n</m:mi>
+                <m:mo>)</m:mo>
+              </m:mrow>
+              <m:mo>¤</m:mo>
+              <m:msub>
+                <m:mi>r</m:mi>
+                <m:mi>b</m:mi>
+              </m:msub>
+              <m:mrow>
+                <m:mo>(</m:mo>
+                <m:mi>n</m:mi>
+                <m:mo>)</m:mo>
+              </m:mrow>
+              <m:mo>)</m:mo>
+            </m:mrow>
+          </m:mrow>
+        </m:math>
+      </equation>
+      <para id="id2256892">See
+<link url="http://ccrma.stanford.edu/realsimple/imp_meas/golay_response.m">golay_response.m</link>
+for more details.</para>
+    </section>
+    <section id="uid5">
+      <title>Measurement Procedure Using Golay Complementary Sequences</title>
+      <list id="id2256918" list-type="enumerated"><item id="uid6">Generate the Golay complementary sequnces
+<link url="http://ccrma.stanford.edu/realsimple/imp_meas/golayA.wav">golayA.wav</link>
+
+and
+<link url="http://ccrma.stanford.edu/realsimple/imp_meas/golayB.wav">golayB.wav</link>
+
+using
+<link url="http://ccrma.stanford.edu/realsimple/imp_meas/generate_golay.m">generate_golay.m</link>.
+</item>
+        <item id="uid7">Open the pd
+ patch
+<link url="http://ccrma.stanford.edu/realsimple/imp_meas/golay.pd">golay.pd</link>,
+in pd.
+</item>
+        <item id="uid8">Ensure that the patch is not in editing mode, and check the
+“compute audio” box in the main pd
+ window.
+</item>
+        <item id="uid9">Adjust the “Output Volume” so that when you click on “Record
+Response to Golay A”, the system under test is behaving linearly
+(i.e. not clipping), but so that the input signal to the sound
+interface is not too noisy.
+</item>
+        <item id="uid10">If there is an input volume on the sound interface, adjust it so
+that the levels approximately match those shown in <link target-id="uid11"/>
+when you click on “Record Response to Golay A” and “Record
+Response to Golay B.” If the sound interface has no input volume,
+then you will need to adjust the “Output Volume” accordingly.
+<figure id="uid11" orient="horizontal"><media id="id8415177" alt=""><image src="../../media/golayScale.png" mime-type="image/png" width="622"/><image for="pdf" src="../../media/golayScale.eps" mime-type="application/postscript" print-width="4in"/></media><caption>golay.pd
+ after
+making a measurement with an appropriate input level</caption></figure></item>
+        <item id="uid12">Once you are satisfied with the results, click the “Write Responses
+to Disk” button.
+</item>
+        <item id="uid13">pd
+ will write the files RespA.wav
+ and
+RespB.wav
+ to disk. Rename these files so that the names
+match the measurement you just made. For instance, you might rename
+them to
+<link url="http://ccrma.stanford.edu/realsimple/imp_meas/hpfRespA.wav">hpfRespA.wav</link>
+
+and
+<link url="http://ccrma.stanford.edu/realsimple/imp_meas/hpfRespB.wav">hpfRespB.wav</link>
+if they corresponded to the measurement of a high-pass filter.
+</item>
+        <item id="uid14">Run
+<link url="http://ccrma.stanford.edu/realsimple/imp_meas/golay_response.m">golay_response('hpf')</link>
+in 
+<link url="http://www.mathworks.com/">MATLAB</link>
+or 
+<link url="http://www.octave.org/">Octave</link>
+to analyze the measured response.
+Plots will be created, and the file
+<link url="http://ccrma.stanford.edu/realsimple/imp_meas/hpfImpResp.wav">hpfImpResp.wav</link>
+will be written to disk.
+</item>
+      
+</list>
+    </section>
+  </content>
+  <bib:file>
+    <bib:entry id="bid0">
+      <bib:book>
+<!--required fields-->
+        <bib:author>Abel, J. and Berners, D.</bib:author>
+        <bib:title>Signal Processing Techniques for Digital Audio Effects</bib:title>
+        <bib:publisher>http://ccrma.stanford.edu/courses/424/</bib:publisher>
+        <bib:year>2005</bib:year>
+<!--optional fields-->
+        <bib:volume/>
+        <bib:series/>
+        <bib:address/>
+        <bib:edition/>
+        <bib:month/>
+        <bib:note/>
+      </bib:book>
+    </bib:entry>
+  </bib:file>
+</document>

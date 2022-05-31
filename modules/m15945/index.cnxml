@@ -1,0 +1,254 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:md="http://cnx.rice.edu/mdml" xmlns:bib="http://bibtexml.sf.net/">
+  <title>Swept Sine Impulse Response Measurement</title>
+  <metadata><md:content-id>undefined</md:content-id><md:title/><md:uuid>4dadc9fc-7029-48ce-b6fd-62490a0c9cd1</md:uuid>
+</metadata>
+  <content>
+    <para id="id2255608"/>
+    
+    <section id="uid1">
+      <title>Introduction</title>
+      <figure id="uid2" orient="horizontal">
+        <media id="idm11114944" alt=""><image src="../../media/linsystem2-4083.png" mime-type="image/png" width="218"/><image for="pdf" src="../../media/linsystem2.eps" mime-type="application/postscript" print-width="2.2in"/></media>
+        <caption>Linear system to be measured</caption>
+      </figure>
+      <para id="id2255677"><link target-id="uid2"/> depicts a linear system characterized by an impulse
+response <m:math><m:mrow><m:mi>h</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>, driven by an input signal <m:math><m:mrow><m:mi>s</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>, and producing the
+output signal <m:math><m:mrow><m:mi>r</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>. The <emphasis>system identification</emphasis> problem is to
+estimate <m:math><m:mrow><m:mi>h</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> given known input/output signals <m:math><m:mrow><m:mi>s</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> and <m:math><m:mrow><m:mi>r</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>. A
+practical method for identifying finite impulse responses is the
+<emphasis>swept-sine</emphasis> measurement technique, described below.</para>
+    </section>
+    <section id="uid3">
+      <title>Sine Sweep Measurement Theory</title>
+      <para id="id2255808">In some cases, it is desirable to relax the power-maximizing
+constraint <m:math><m:mrow><m:mo>|</m:mo><m:mi>s</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo><m:mo>|</m:mo><m:mo>=</m:mo><m:mn>1</m:mn><m:mo>∀</m:mo><m:mi>n</m:mi></m:mrow></m:math> in favor of obtaining some other
+desirable measurement system properties. For example, we may care
+more about the accuracy of the measurement at lower frequencies
+compared to higher frequencies, so we would like the excitation signal
+<m:math><m:mrow><m:mi>s</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> to contain more energy at lower frequencies
+<link target-id="bid0"/>. We might also be measuring a mechanical or
+acoustical system in which the motor controlled by <m:math><m:mrow><m:mi>s</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> behaves
+weakly nonlinearly. If the nonlinearity is memoryless and is
+<emphasis>NOT</emphasis> preceded by any filtering, then the system to be measured
+matches the Hammerstein model shown in <link target-id="uid4"/>. The goal
+is to measure <m:math><m:mrow><m:mi>h</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>, independently of the motor nonlinearity <m:math><m:mrow><m:mi>f</m:mi><m:mo>(</m:mo><m:mi>s</m:mi><m:mo>)</m:mo></m:mrow></m:math>.
+Performing the measurement is complicated by the fact that
+superposition no longer holds.</para>
+      <figure id="uid4" orient="horizontal">
+        <media id="idp1635264" alt=""><image src="../../media/hammerstein-d5d4.png" mime-type="image/png" width="393"/><image for="pdf" src="../../media/hammerstein.eps" mime-type="application/postscript" print-width="3.2in"/></media>
+        <caption>Hammerstein Model</caption>
+      </figure>
+      <para id="id2255947">Mathematically, the Hammerstein system behaves as follows:</para>
+      <equation id="id2255951">
+        <m:math mode="display">
+          <m:mrow>
+            <m:mi>r</m:mi>
+            <m:mo>(</m:mo>
+            <m:mi>n</m:mi>
+            <m:mo>)</m:mo>
+            <m:mo>=</m:mo>
+            <m:mo>(</m:mo>
+            <m:mi>f</m:mi>
+            <m:mo>(</m:mo>
+            <m:mi>s</m:mi>
+            <m:mo>)</m:mo>
+            <m:mo>*</m:mo>
+            <m:mi>h</m:mi>
+            <m:mo>)</m:mo>
+            <m:mo>(</m:mo>
+            <m:mi>n</m:mi>
+            <m:mo>)</m:mo>
+          </m:mrow>
+        </m:math>
+      </equation>
+      <para id="id2255995">It turns out that we can obtain both of these desirable measurement
+system properties by using a new excitation signal <m:math><m:mrow><m:mi>s</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>. This
+signal is a sine wave with a frequency that is exponentially increased
+from <m:math><m:msub><m:mi>ω</m:mi><m:mn>1</m:mn></m:msub></m:math> to <m:math><m:msub><m:mi>ω</m:mi><m:mn>2</m:mn></m:msub></m:math> over <m:math><m:mi>T</m:mi></m:math> seconds <link target-id="bid1"/>:</para>
+      <equation id="id2254897">
+        <m:math mode="display">
+          <m:mrow>
+            <m:mi>s</m:mi>
+            <m:mrow>
+              <m:mo>(</m:mo>
+              <m:mi>n</m:mi>
+              <m:mo>)</m:mo>
+            </m:mrow>
+            <m:mo>=</m:mo>
+            <m:mo form="prefix">sin</m:mo>
+            <m:mo>[</m:mo>
+            <m:mi>K</m:mi>
+            <m:mrow>
+              <m:mo>(</m:mo>
+              <m:msup>
+                <m:mi>e</m:mi>
+                <m:mrow>
+                  <m:mo>-</m:mo>
+                  <m:mi>n</m:mi>
+                  <m:mo>/</m:mo>
+                  <m:mi>L</m:mi>
+                  <m:msub>
+                    <m:mi>f</m:mi>
+                    <m:mi>s</m:mi>
+                  </m:msub>
+                </m:mrow>
+              </m:msup>
+              <m:mo>-</m:mo>
+              <m:mn>1</m:mn>
+              <m:mo>)</m:mo>
+            </m:mrow>
+            <m:mo>]</m:mo>
+          </m:mrow>
+        </m:math>
+      </equation>
+      <para id="id2256365">where <m:math><m:mrow><m:mi>K</m:mi><m:mo>=</m:mo><m:mfrac><m:mrow><m:msub><m:mi>ω</m:mi><m:mn>1</m:mn></m:msub><m:mi>T</m:mi></m:mrow><m:mrow><m:mo form="prefix">ln</m:mo><m:mfrac><m:msub><m:mi>ω</m:mi><m:mn>2</m:mn></m:msub><m:msub><m:mi>ω</m:mi><m:mn>1</m:mn></m:msub></m:mfrac></m:mrow></m:mfrac></m:mrow></m:math> and <m:math><m:mrow><m:mi>L</m:mi><m:mo>=</m:mo><m:mfrac><m:mi>T</m:mi><m:mrow><m:mo form="prefix">ln</m:mo><m:mfrac><m:msub><m:mi>ω</m:mi><m:mn>2</m:mn></m:msub><m:msub><m:mi>ω</m:mi><m:mn>1</m:mn></m:msub></m:mfrac></m:mrow></m:mfrac></m:mrow></m:math>. The <link url="http://www.mathworks.com/">MATLAB</link>/<link url="http://www.octave.org/">Octave</link> 
+code
+<link url="http://ccrma.stanford.edu/realsimple/imp_meas/generate_sinesweeps.m">generate_sinesweeps.m</link>
+generates the appropriate sine sweep.</para>
+      <para id="element-498">Now we consider how to extract the linearized impulse response from a measurement.  In essence, we need to <link url="http://ccrma.stanford.edu/~jos/pasp/Inverse_Filtering.html">inverse filter</link> the measurement by the excitation signal.
+
+</para><para id="id2256498">To this end, we realize that a useful property of <m:math><m:mrow><m:mi>s</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> is that the time delay <m:math><m:mrow><m:mi>Δ</m:mi><m:msub><m:mi>t</m:mi><m:mi>N</m:mi></m:msub></m:mrow></m:math>
+between any sample <m:math><m:msub><m:mi>n</m:mi><m:mn>0</m:mn></m:msub></m:math> and a later point with instantaneous
+frequency <m:math><m:mi>N</m:mi></m:math> times larger than the instantaneous frequency at
+<m:math><m:mrow><m:mi>s</m:mi><m:mo>(</m:mo><m:msub><m:mi>n</m:mi><m:mn>0</m:mn></m:msub><m:mo>)</m:mo></m:mrow></m:math> is constant:</para>
+      <equation id="uid5">
+        <m:math mode="display">
+          <m:mrow>
+            <m:mi>Δ</m:mi>
+            <m:msub>
+              <m:mi>t</m:mi>
+              <m:mi>N</m:mi>
+            </m:msub>
+            <m:mo>=</m:mo>
+            <m:mi>T</m:mi>
+            <m:mfrac>
+              <m:mrow>
+                <m:mo form="prefix">ln</m:mo>
+                <m:mo>(</m:mo>
+                <m:mi>N</m:mi>
+                <m:mo>)</m:mo>
+              </m:mrow>
+              <m:mrow>
+                <m:mo form="prefix">ln</m:mo>
+                <m:mfrac>
+                  <m:msub>
+                    <m:mi>ω</m:mi>
+                    <m:mn>2</m:mn>
+                  </m:msub>
+                  <m:msub>
+                    <m:mi>ω</m:mi>
+                    <m:mn>1</m:mn>
+                  </m:msub>
+                </m:mfrac>
+              </m:mrow>
+            </m:mfrac>
+          </m:mrow>
+        </m:math>
+      </equation>
+      <para id="id2256643">This characteristic implies that after inverse-filtering the measured
+response, the signals due to the nonlinear terms in <m:math><m:mrow><m:mi>f</m:mi><m:mo>(</m:mo><m:mi>s</m:mi><m:mo>)</m:mo></m:mrow></m:math> are located
+at specific places in the final response signal. Consequently, the
+linear contribution to the response, which is proportional to <m:math><m:mrow><m:mi>h</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>
+can be separated from the other nonlinear terms. We can thus measure
+a linear system even if it is being driven by a weakly nonlinear
+motor.</para>
+      <para id="id2256686">Because the frequency of <m:math><m:mrow><m:mi>s</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> increases exponentially, the system is
+excited for longer periods of time at lower frequencies. This means
+that the inverse filter averages measurements at lower frequencies
+longer, so this measurement technique is better suited to especially
+low-pass noise sources.</para>
+    </section>
+    <section id="uid6">
+      <title>Sine Sweep Measurement Procedure</title>
+      <list id="id2256718" list-type="enumerated"><item id="uid7">Generate the 
+<link url="http://ccrma.stanford.edu/realsimple/imp_meas/sinesweeps.wav">sine sweeps</link>
+using
+<link url="http://ccrma.stanford.edu/realsimple/imp_meas/generate_sinesweeps.m">generate_sinesweeps.m</link>
+</item>
+        <item id="uid8">Open the pd
+ patch
+<link url="http://ccrma.stanford.edu/realsimple/imp_meas/sinesweeps.pd">sinesweeps.pd</link>
+in pd.
+</item>
+        <item id="uid9">Ensure that the patch is not in editing mode, and check the
+“compute audio” box in the main pd
+ window.
+</item>
+        <item id="uid10">Adjust the “Output Volume” so that when you click on “Record
+Response To The Sine Sweeps,” the system under test is behaving
+linearly (i.e. not clipping), but so that the input signal to the
+sound interface is not too noisy.
+</item>
+        <item id="uid11">If there is an input volume on the sound interface, adjust it so
+that the levels approximately match those shown in
+<link target-id="uid12"/> when you click on “Record Response To The
+Sine Sweeps.” If the sound interface has no input volume, then you
+will need to adjust the “Output Volume” accordingly.
+<figure id="uid12" orient="horizontal"><media id="idp357408" alt=""><image src="../../media/sinesweepsScale.png" mime-type="image/png" width="613"/><image for="pdf" src="../../media/sinesweepsScale.eps" mime-type="application/postscript" print-width="4in"/></media><caption>sinesweeps.pd
+ after
+making a measurement with an appropriate input level</caption></figure></item>
+        <item id="uid13">Once you are satisfied with the results, click the “Write Responses
+to Disk” button.
+</item>
+        <item id="uid14">pd
+ will write the file Resp.wav
+ to disk. Rename
+this file so that the name matches the measurement you just made.
+For instance, you might rename it to
+<link url="http://ccrma.stanford.edu/realsimple/imp_meas/nonlinear2Resp.wav">nonlinear2Resp.wav</link>
+if it corresponded to the second time you measured the transfer
+function of a weakly nonlinear system.
+</item>
+<item id="uid15">Run
+<link url="http://ccrma.stanford.edu/realsimple/imp_meas/sinesweeps_response.m">sinesweeps_response('nonlinear2,100,0.4')</link>
+in 
+<link url="http://www.mathworks.com/">MATLAB</link>
+or 
+<link url="http://www.octave.org/">Octave</link>
+to analyze the measured response.
+This means that the inverse filter will be restricted to a dynamic
+range of 100 (40 dB), which helps avoid exaggerating problems
+beneath <m:math><m:msub><m:mi>ω</m:mi><m:mn>1</m:mn></m:msub></m:math> and above <m:math><m:msub><m:mi>ω</m:mi><m:mn>2</m:mn></m:msub></m:math>, where the excitation signal
+has little energy. 0.4 refers to the length in seconds of the
+linear impulse response term to be extracted. Plots will be
+generated, and the file
+<link url="http://ccrma.stanford.edu/realsimple/imp_meas/nonlinear2ImpResp.wav">nonlinear2ImpResp.wav</link>
+will be written to disk.
+</item>
+</list>
+    </section>
+  </content>
+  <bib:file>
+    <bib:entry id="bid0">
+      <bib:book>
+<!--required fields-->
+        <bib:author>Abel, J. and Berners, D.</bib:author>
+        <bib:title>Signal Processing Techniques for Digital Audio Effects</bib:title>
+        <bib:publisher>http://ccrma.stanford.edu/courses/424/</bib:publisher>
+        <bib:year>2005</bib:year>
+<!--optional fields-->
+        <bib:volume/>
+        <bib:series/>
+        <bib:address/>
+        <bib:edition/>
+        <bib:month/>
+        <bib:note/>
+      </bib:book>
+    </bib:entry>
+    <bib:entry id="bid1">
+      <bib:article>
+<!--required fields-->
+        <bib:author>Farina, Angelo</bib:author>
+        <bib:title>Simultaneous Measurement of Impulse Response and Distortion with a Swept-Sine Technique</bib:title>
+        <bib:journal>Audio Engineering Society Convention</bib:journal>
+        <bib:year>2000</bib:year>
+<!--optional fields-->
+        <bib:volume>Preprint 5093</bib:volume>
+        <bib:number/>
+        <bib:pages/>
+        <bib:month>Feb.</bib:month>
+        <bib:note/>
+      </bib:article>
+    </bib:entry>
+  </bib:file>
+</document>

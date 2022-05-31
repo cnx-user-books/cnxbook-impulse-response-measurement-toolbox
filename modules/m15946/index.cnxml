@@ -1,0 +1,377 @@
+<document xmlns="http://cnx.rice.edu/cnxml" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:md="http://cnx.rice.edu/mdml">
+  <title>Measuring Impulse Responses Using Golay Complementary Sequences and Swept Sinusoids</title>
+  <metadata>
+  <md:content-id>m15946</md:content-id><md:title>Measuring Impulse Responses Using Golay Complementary Sequences and Swept Sinusoids</md:title>
+  <md:abstract>Two impulse-response measurement methods are 
+demonstrated, with source code provided in Matlab and Pure Data (PD).
+The measurement technique using Golay complementary sequences is particularly
+robust to additive white noise, while the swept sine measurement
+technique is robust to a weakly nonlinear motor exciting the linear
+system being measured.</md:abstract>
+  <md:uuid>dc7691d2-0db4-44d4-aeff-677677fba7b9</md:uuid>
+</metadata>
+<featured-links>
+  <!-- WARNING! The 'featured-links' section is read only. Do not edit below.
+       Changes to the links section in the source will not be saved. -->
+    <link-group type="supplemental">
+      <link url="http://ccrma.stanford.edu/realsimple/imp_meas/" strength="1">Original source for this module</link>
+    </link-group>
+  <!-- WARNING! The 'featured-links' section is read only. Do not edit above.
+       Changes to the links section in the source will not be saved. -->
+</featured-links>
+<content>
+    <para id="id2255608"/>
+    
+    
+    <section id="uid1">
+      <title>Introduction</title>
+      <figure id="uid2" orient="horizontal"><media id="id47879217" alt=""><image src="../../media/linsystem2-614a.png" mime-type="image/png" width="218"/><image for="pdf" src="../../media/linsystem2.eps" mime-type="application/postscript" print-width="2.2in"/></media>
+        
+      <caption>Linear system to be measured</caption></figure>
+      <para id="id2255656"><link target-id="uid2"/> depicts a linear system characterized by an impulse
+response <m:math><m:mrow><m:mi>h</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>, driven by an input signal <m:math><m:mrow><m:mi>s</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>, and producing the
+output signal <m:math><m:mrow><m:mi>r</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>. The <emphasis>system identification</emphasis> problem is to
+estimate <m:math><m:mrow><m:mi>h</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> given known input/output signals <m:math><m:mrow><m:mi>s</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> and <m:math><m:mrow><m:mi>r</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>.
+This module illustrates the <emphasis>swept-sine</emphasis> and the <emphasis>Golay complementary sequence</emphasis> 
+techniques for identifying finite impulse responses. The first
+example measures the impulse response of a highpass filter using the
+Golay method, and the second example measures the impulse response of
+a weakly nonlinear loudspeaker driver using the swept-sine method.</para>
+    </section>
+    <section id="uid3">
+      <title>Summary Of Objectives</title>
+      <list id="id2255797" list-type="bulleted"><item id="uid4">To provide a general framework for <emphasis>characterizing
+single-input, single-output linear systems</emphasis>.
+</item>
+        <item id="uid5">To demonstrate how to measure the <emphasis>impulse
+response</emphasis> of a linear system using <emphasis>Golay complementary sequences</emphasis>.
+</item>
+        <item id="uid6">To explain some of the limitations of making measurements using
+standard sound interfaces.
+</item>
+        <item id="uid7">To demonstrate how to find the <emphasis>minimum-phase spectrum</emphasis>
+corresponding to a complex spectrum.
+</item>
+        <item id="uid8">To explain how to measure the impulse response of a system even
+if the excitation source <emphasis>motor is weakly nonlinear</emphasis>. This
+measurement technique uses a <emphasis>sine sweep</emphasis> test signal.
+</item>
+      </list>
+    </section>
+    <section id="uid9">
+      <title>Installation</title>
+      <list id="id2255897" list-type="enumerated"><item id="uid10">Install a sound card, sound interface, or other full-duplex data
+acquisition card.
+</item>
+        <item id="uid11">Consider testing the data acquisition card viewing the
+<link url="http://ccrma.stanford.edu/realsimple/soundcard_test/">soundcard set-up instructions</link>.
+</item>
+        <item id="uid12">Install either <link url="http://www.mathworks.com/">MATLAB</link> or 
+<link url="http://www.octave.org/">Octave</link>.
+
+</item>
+        <item id="uid13">Install <link url="http://crca.ucsd.edu/msp/software.html">pd</link>. (Alternatively, you may use other software
+that is capable of recording a system's output for a given input
+excitation signal. The software should also be capable of reading
+and writing WAV files. For example, any multitrack recording
+software should be fine.)
+</item>
+        <item id="uid14">Download
+<link url="http://ccrma.stanford.edu/realsimple/imp_meas/tf_meas.zip">tf_meas.zip</link>
+and unzip the contents into a conveniently located local directory.
+</item>
+      </list>
+    </section>
+    <section id="uid15">
+      <title>Linear System</title>
+      <para id="id2256037">Consider the causal, single-input single-output (SISO) system shown in
+<link target-id="uid16"/>. For simplicity, we will take the system to be
+linear and discrete-time, so that it is characterized by its impulse
+response <m:math><m:mrow><m:mi>h</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> or equivalently its transfer function <m:math><m:mrow><m:mi>H</m:mi><m:mo>(</m:mo><m:mi>z</m:mi><m:mo>)</m:mo></m:mrow></m:math>, which is
+the <m:math><m:mi>z</m:mi></m:math> transform of <m:math><m:mrow><m:mi>h</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>.</para>
+      <equation id="id2256109"><m:math mode="display">
+          <m:mrow>
+            <m:mi>h</m:mi>
+            <m:mo>(</m:mo>
+            <m:mi>n</m:mi>
+            <m:mo>)</m:mo>
+            <m:mo>↔</m:mo>
+            <m:mi>H</m:mi>
+            <m:mo>(</m:mo>
+            <m:mi>z</m:mi>
+            <m:mo>)</m:mo>
+          </m:mrow>
+        </m:math>
+      </equation>
+      <para id="id2256137">We will assume that both <m:math><m:mrow><m:mi>h</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> and <m:math><m:mrow><m:mi>H</m:mi><m:mo>(</m:mo><m:mi>z</m:mi><m:mo>)</m:mo></m:mrow></m:math> exist so that we can
+discuss measuring them interchangeably. We will further assume that
+<m:math><m:mrow><m:mi>h</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> has finite length so that we can measure the response to an
+input signal in a finite amount of time. The goal of this document is
+to explain how to excite the system with a signal <m:math><m:mrow><m:mi>s</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>, measure the
+response <m:math><m:mrow><m:mi>r</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>, and use <m:math><m:mrow><m:mi>s</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> and <m:math><m:mrow><m:mi>r</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> to determine <m:math><m:mrow><m:mi>h</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> (and
+equivalently <m:math><m:mrow><m:mi>H</m:mi><m:mo>(</m:mo><m:mi>z</m:mi><m:mo>)</m:mo></m:mrow></m:math>). In particular, it is useful to pick a signal
+<m:math><m:mrow><m:mi>s</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math> that contains a large amount of energy so that measurement
+noise will not significantly corrupt the measurement results.</para>
+      <figure id="uid16" orient="horizontal">
+        <media id="id47877148" alt=""><image src="../../media/linsystem.png" mime-type="image/png" width="218"/><image for="pdf" src="../../media/linsystem.eps" mime-type="application/postscript" print-width="2.2in"/></media>
+        <caption>Linear system</caption>
+      </figure>
+    </section>
+    <section id="uid17">
+      <title>Limitations Of Sound Interfaces</title>
+      <para id="id2256330">Sound cards and sound interfaces are not designed for making transfer
+function measurements. They merely provide a cost-effective solution
+since almost all computers have sound cards. We demonstrate these
+weaknesses given measurements made on a PreSonus Firepod sound
+interface. The output from channel 1 was directly connected to the
+line input on channel 1, and the sampling rate was <m:math><m:mrow><m:msub><m:mi>f</m:mi><m:mi>S</m:mi></m:msub><m:mo>=</m:mo><m:mn>44</m:mn><m:mo>.</m:mo><m:mn>1</m:mn></m:mrow></m:math>kHz.</para>
+      <list id="id2256365" list-type="enumerated"><item id="uid18">Sound interfaces attenuate frequencies near DC and near half of
+the sampling rate <m:math><m:mrow><m:msub><m:mi>f</m:mi><m:mi>S</m:mi></m:msub><m:mo>/</m:mo><m:mn>2</m:mn></m:mrow></m:math>. <link target-id="uid19"/> shows the measured
+magnitude response of the sound interface. Ideally it would be
+constant for all frequencies. However, <link target-id="uid19"/> shows that
+the -3dB point for the DC blocker lies near 5Hz. The anti-aliasing
+filters cause the magnitude to roll off sharply such that the high
+frequency -3dB roll-off point is about 20.9kHz.
+<figure id="uid19" orient="horizontal"><media id="id48642134" alt=""><image src="../../media/direct2Mag.png" mime-type="image/png" width="397"/><image for="pdf" src="../../media/direct2Mag.eps" mime-type="application/postscript" print-width="4in"/></media><caption>Magnitude response of the PreSonus
+FirePOD sound interface when the channel 1 output is directly
+connected to the channel 1 line input</caption></figure></item>
+        <item id="uid20">The same sound interface filters cause the phase response
+measurement to be incorrect as well. Although ideally the phase
+response would be 0 radians for all frequencies, <link target-id="uid21"/>
+reveals that the phase measurement is distorted in roughly the same
+regions where the magnitude measurement is distorted.
+<figure id="uid21" orient="horizontal"><media id="id47876635" alt=""><image src="../../media/direct2Phase.png" mime-type="image/png" width="398"/><image for="pdf" src="../../media/direct2Phase.eps" mime-type="application/postscript" print-width="4in"/></media><caption>Phase response of the PreSonus
+FirePOD sound interface when the channel 1 output is directly
+connected to the channel 1 line input</caption></figure></item>
+        <item id="uid22">Even when a computer is programmed to pass an input signal
+flowing into the sound interface input out of the sound interface
+output as fast as possible, there is a <emphasis>delay</emphasis> or
+<emphasis>latency</emphasis>. This delay is typically on the order of tens of
+milliseconds. <link target-id="uid23"/> shows the impulse response
+measured on the PreSonus card. The latency is approximately 62ms.
+The latency could have been decreased some by adjusting software
+settings in pd
+. The impulse response also rings noticeably due to
+the anti-aliasing filters.
+<figure id="uid23" orient="horizontal"><media id="id47875981" alt=""><image src="../../media/direct2ImpResp.png" mime-type="image/png" width="459"/><image for="pdf" src="../../media/direct2ImpResp.eps" mime-type="application/postscript" print-width="4in"/></media><caption>Impulse response of the PreSonus
+FirePOD sound interface when the channel 1 output is directly
+connected to the channel 1 line input</caption></figure>
+For reference, we provide the <link url="http://ccrma.stanford.edu/realsimple/imp_meas/direct2ImpResp.wav">measured impulse response</link>
+shown in <link target-id="uid23"/>.
+</item>
+      </list>
+    </section>
+    <section id="uid24">
+      <title>Minimum Phase Systems</title>
+      <para id="id2256777">One further consequence of the delay is that determining the phase
+response of the measured system is more complicated. The delay is
+responsible for a linear phase term since <m:math><m:mrow><m:mi>δ</m:mi><m:mrow><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>-</m:mo><m:mi>k</m:mi><m:mo>)</m:mo></m:mrow><m:mo>↔</m:mo><m:msup><m:mi>e</m:mi><m:mrow><m:mo>-</m:mo><m:mi>j</m:mi><m:mn>2</m:mn><m:mi>π</m:mi><m:mi>f</m:mi><m:mi>k</m:mi><m:mo>/</m:mo><m:msub><m:mi>f</m:mi><m:mi>S</m:mi></m:msub></m:mrow></m:msup></m:mrow></m:math>. If the delay is known (or
+measured), then it may be removed by multiplying the measured spectrum
+by <m:math><m:msup><m:mi>e</m:mi><m:mrow><m:mi>j</m:mi><m:mn>2</m:mn><m:mi>π</m:mi><m:mi>f</m:mi><m:mi>k</m:mi><m:mo>/</m:mo><m:msub><m:mi>f</m:mi><m:mi>S</m:mi></m:msub></m:mrow></m:msup></m:math>. However, if the system being measured is known
+to be minimum phase, then the <link url="http://ccrma.stanford.edu/jos/filters/Matlab_listing_mps_m_test.html"><emphasis>folded-cepstrum method</emphasis></link>
+may be applied to find the minimum phase frequency response
+corresponding to the measured frequency response.</para>
+      <para id="id2256895">The transfer function measurement toolbox assumes that the system
+being measured is minimum phase. This is a valid assumption in many
+cases. For instance, all strictly positive real transfer functions
+are minimum phase. Dissipative systems are strictly positive real
+(and therefore minimum phase) if the appropriate quantity is measured
+and the sensor and motor are collocated. For example, if <m:math><m:mrow><m:mi>s</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>
+controls a motor exerting a force on a dissipative system, and <m:math><m:mrow><m:mi>r</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math>
+is the velocity at that same point, the corresponding transfer
+function will be minimum phase. This holds for other dual variable
+pairs such as torque and angular velocity, voltage and current, and
+pressure and fluid flow.</para>
+      <para id="id2256942">For systems that are not minimum phase, such as systems involving a
+transmission delay between the input and output quantities, the phase
+plotted by the transfer function measurement toolbox is not the system
+phase response, but rather the minimum phase response corresponding to
+the measured system phase response.</para>
+    </section>
+    <section id="uid25">
+      <title>High Pass Filter Measurement</title>
+      <para id="id2256958">The circuit shown in <link target-id="uid26"/> was measured using the
+Golay complementary sequence method to show how the sound interface non-idealities affect a measurement. <m:math><m:msub><m:mi>V</m:mi><m:mrow><m:mi>I</m:mi><m:mi>N</m:mi></m:mrow></m:msub></m:math> was
+connected to the output of channel 1 of the PreSonus sound interface,
+and <m:math><m:msub><m:mi>V</m:mi><m:mrow><m:mi>O</m:mi><m:mi>U</m:mi><m:mi>T</m:mi></m:mrow></m:msub></m:math> was connected to the line input of channel 1 of the
+interface.</para>
+      <figure id="uid26" orient="horizontal">
+        <media id="id47874933" alt=""><image src="../../media/hpf.png" mime-type="image/png" width="182"/><image for="pdf" src="../../media/hpf.eps" mime-type="application/postscript" print-width="2in"/></media>
+        <caption>High pass filter electrical circuit</caption>
+      </figure>
+      <para id="id2257029">The analog transfer function <m:math><m:mrow><m:mi>H</m:mi><m:mo>(</m:mo><m:mi>f</m:mi><m:mo>)</m:mo></m:mrow></m:math> can be determined analytically
+using the voltage divider rule:</para>
+      <equation id="id2257050">
+        <m:math mode="display">
+          <m:mrow>
+            <m:mi>H</m:mi>
+            <m:mrow>
+              <m:mo>(</m:mo>
+              <m:mi>f</m:mi>
+              <m:mo>)</m:mo>
+            </m:mrow>
+            <m:mo>=</m:mo>
+            <m:mfrac>
+              <m:mrow>
+                <m:msub>
+                  <m:mi>V</m:mi>
+                  <m:mrow>
+                    <m:mi>O</m:mi>
+                    <m:mi>U</m:mi>
+                    <m:mi>T</m:mi>
+                  </m:mrow>
+                </m:msub>
+                <m:mrow>
+                  <m:mo>(</m:mo>
+                  <m:mi>f</m:mi>
+                  <m:mo>)</m:mo>
+                </m:mrow>
+              </m:mrow>
+              <m:mrow>
+                <m:msub>
+                  <m:mi>V</m:mi>
+                  <m:mrow>
+                    <m:mi>I</m:mi>
+                    <m:mi>N</m:mi>
+                  </m:mrow>
+                </m:msub>
+                <m:mrow>
+                  <m:mo>(</m:mo>
+                  <m:mi>f</m:mi>
+                  <m:mo>)</m:mo>
+                </m:mrow>
+              </m:mrow>
+            </m:mfrac>
+            <m:mo>=</m:mo>
+            <m:mfrac>
+              <m:mi>R</m:mi>
+              <m:mrow>
+                <m:mi>R</m:mi>
+                <m:mo>+</m:mo>
+                <m:mfrac>
+                  <m:mn>1</m:mn>
+                  <m:mrow>
+                    <m:mi>j</m:mi>
+                    <m:mn>2</m:mn>
+                    <m:mi>π</m:mi>
+                    <m:mi>f</m:mi>
+                    <m:mi>C</m:mi>
+                  </m:mrow>
+                </m:mfrac>
+              </m:mrow>
+            </m:mfrac>
+            <m:mo>=</m:mo>
+            <m:mfrac>
+              <m:mrow>
+                <m:mi>j</m:mi>
+                <m:mn>2</m:mn>
+                <m:mi>π</m:mi>
+                <m:mi>f</m:mi>
+                <m:mi>R</m:mi>
+                <m:mi>C</m:mi>
+              </m:mrow>
+              <m:mrow>
+                <m:mi>j</m:mi>
+                <m:mn>2</m:mn>
+                <m:mi>π</m:mi>
+                <m:mi>f</m:mi>
+                <m:mi>R</m:mi>
+                <m:mi>C</m:mi>
+                <m:mo>+</m:mo>
+                <m:mn>1</m:mn>
+              </m:mrow>
+            </m:mfrac>
+          </m:mrow>
+        </m:math>
+      </equation>
+      <para id="id2257178">In this case, <m:math><m:mrow><m:mi>R</m:mi><m:mo>=</m:mo><m:mn>1</m:mn></m:mrow></m:math>k<m:math><m:mi>Ω</m:mi></m:math> and <m:math><m:mrow><m:mi>C</m:mi><m:mo>=</m:mo><m:mn>0</m:mn><m:mo>.</m:mo><m:mn>47</m:mn><m:mi>μ</m:mi></m:mrow></m:math>F, so the -3dB point is
+about <m:math><m:mrow><m:msub><m:mi>f</m:mi><m:mrow><m:mn>3</m:mn><m:mi>d</m:mi><m:mi>B</m:mi></m:mrow></m:msub><m:mo>=</m:mo><m:mfrac><m:mn>1</m:mn><m:mrow><m:mn>2</m:mn><m:mi>π</m:mi><m:mi>R</m:mi><m:mi>C</m:mi></m:mrow></m:mfrac><m:mo>≈</m:mo><m:mn>340</m:mn></m:mrow></m:math>Hz. <link target-id="uid27"/> and
+<link target-id="uid28"/> show that the frequency response is accurately measured in the
+range of about 10Hz to about <m:math><m:mrow><m:mn>9</m:mn><m:msub><m:mi>f</m:mi><m:mi>S</m:mi></m:msub><m:mo>/</m:mo><m:mn>20</m:mn></m:mrow></m:math>.</para>
+      <figure id="uid27" orient="horizontal">
+        <media id="id47873766" alt=""><image src="../../media/hpfMag.png" mime-type="image/png" width="518"/><image for="pdf" src="../../media/hpfMag.eps" mime-type="application/postscript" print-width="4in"/></media>
+        <caption>Measured magnitude response of the high pass filter</caption>
+      </figure>
+      <figure id="uid28" orient="horizontal">
+        <media id="id47873452" alt=""><image src="../../media/hpfAngle.png" mime-type="image/png" width="519"/><image for="pdf" src="../../media/hpfAngle.eps" mime-type="application/postscript" print-width="4in"/></media>
+        <caption>Measured phase response of the high pass filter</caption>
+      </figure>
+      <para id="id2257321">The ringing in the measured impulse response distracts from the more subtle
+characteristics of the ideal high pass filter impulse response. For transfer
+functions that pass large amounts of energy at high frequencies, it may be more
+instructive to inspect the frequency domain measurement results.</para>
+      <figure id="uid29" orient="horizontal">
+        <media id="id47873154" alt=""><image src="../../media/hpfImpResp.png" mime-type="image/png" width="413"/><image for="pdf" src="../../media/hpfImpResp.eps" mime-type="application/postscript" print-width="4in"/></media>
+        <caption>Impulse response</caption>
+      </figure>
+    </section>
+    <section id="uid30">
+      <title>Sine Sweep Measurement of a Weakly Nonlinear Loudspeaker Driver</title>
+      <para id="id2257349">To exeraggerate the nonlinearity of a loudspeaker, we cut the cone of
+a mishandled driver as shown in <link target-id="uid31"/>. We monitored the sound
+pressure several centimeters in front of the dustcap using an Audio
+Technica AT4049a microphone, which has a flat magnitude response to
+within 3dB from 100Hz to 5kHz. The output from channel 1 of the
+PreSonus sound interface was connected to the speaker via a power
+amplifier, and the microphone was connected to the microphone input of
+channel 1 on the sound interface. The following results are typical
+of <link url="http://ccrma.stanford.edu/realsimple/imp_meas/">sine sweep measurements</link>
+to show how with a weakly nonlinear motor.</para>
+      <figure id="uid31" orient="horizontal">
+        <media id="id47872901" alt=""><image src="../../media/bsn.png" mime-type="image/png" width="267"/><image for="pdf" src="../../media/bsn.eps" mime-type="application/postscript" print-width="2.6in"/></media>
+        <caption>Mishandled driver with additional cuts in
+the cone</caption>
+      </figure>
+      <para id="id2257388">Inverse filtering the measured response results in
+<link target-id="uid32"/>, which is a plot of
+<link url="http://ccrma.stanford.edu/realsimple/imp_meas/nonlinear2ImpResp.wav">nonlinear2ImpResp.wav</link>.
+The linear contribution corresponds to the spike at the beginning,
+while the weakly nonlinear terms are clustered closer to the end of
+the response.</para>
+      <figure id="uid32" orient="horizontal">
+        <media id="id47872718" alt=""><image src="../../media/nonlinear2FullLength.png" mime-type="image/png" width="413"/><image for="pdf" src="../../media/nonlinear2FullLength.eps" mime-type="application/postscript" print-width="4in"/></media>
+        <caption>Full-length
+response</caption>
+      </figure>
+      <para id="id2257427">The main linear contribution is cut out and plotted in
+<link target-id="uid33"/>. The measurement was not made in an
+anechoic chamber, so there is a reflection about 15ms after the main
+impact.</para>
+      <figure id="uid33" orient="horizontal">
+        <media id="id47872429" alt=""><image src="../../media/nonlinear2LinearTerm.png" mime-type="image/png" width="450"/><image for="pdf" src="../../media/nonlinear2LinearTerm.eps" mime-type="application/postscript" print-width="4in"/></media>
+        <caption>Linear impulse
+response term</caption>
+      </figure>
+      <para id="id2257450">The nonlinear terms are shown magnified in
+<link target-id="uid34"/>. The lower order nonlinear terms
+toward the right have larger magnitude but overlap less in time (see
+<link target-id="uid34"/>). Note that <link document="m15945" target-id="uid5"/>
+implies that the overlapping could be reduced by increasing the total
+length <m:math><m:mi>T</m:mi></m:math> of the sweep excitation signal.</para>
+      <figure id="uid34" orient="horizontal">
+        <media id="id47871885" alt=""><image src="../../media/nonlinear2NonlinearTerms.png" mime-type="image/png" width="413"/><image for="pdf" src="../../media/nonlinear2NonlinearTerms.eps" mime-type="application/postscript" print-width="4in"/></media>
+        <caption>Nonlinear response
+terms</caption>
+      </figure>
+      <para id="id2257491">The magnitude and phase responses corresponding to the linear impulse
+response term from <link target-id="uid33"/> are shown in
+<link target-id="uid35"/> and <link target-id="uid36"/> in <emphasis>blue</emphasis>. For
+comparison, another sine sweep measurement was made at a lower level
+so that the speaker behaved approximately linearly. Decreasing the
+level also resulted in more noise and even some systematic error, as
+is evidenced by the <emphasis>red</emphasis> curves in <link target-id="uid35"/> and
+<link target-id="uid36"/>. This comparison demonstrates that making
+measurements at larger levels can reduce the effects of noise, while
+nonlinear motor effects can be overcome with the sine sweep
+measurement technique.</para>
+      <figure id="uid35" orient="horizontal">
+        <media id="id47871747" alt=""><image src="../../media/nonlinear2Phase.png" mime-type="image/png" width="399"/><image for="pdf" src="../../media/nonlinear2Phase.eps" mime-type="application/postscript" print-width="4in"/></media>
+        <caption>Proportional to magnitude response of <m:math><m:mrow><m:mi>h</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math></caption>
+      </figure>
+      <figure id="uid36" orient="horizontal">
+        <media id="id47871312" alt=""><image src="../../media/nonlinear2Mag.png" mime-type="image/png" width="416"/><image for="pdf" src="../../media/nonlinear2Mag.eps" mime-type="application/postscript" print-width="4in"/></media>
+        <caption>Phase response of <m:math><m:mrow><m:mi>h</m:mi><m:mo>(</m:mo><m:mi>n</m:mi><m:mo>)</m:mo></m:mrow></m:math></caption>
+      </figure>
+    </section>
+  </content>
+</document>
